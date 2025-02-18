@@ -46,3 +46,29 @@ def orders(request):
     template_data['title'] = 'Orders'
     template_data['orders'] = request.user.order_set.all()
     return render(request, 'accounts/orders.html', {'template_data': template_data})
+
+def password_reset(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        # email = request.POST.get('email')
+        new_password = request.POST.get('new_password')
+        
+        if not all([username, new_password]):
+            return render(request, 'accounts/password_reset.html', {
+                'error': 'All fields are required.',
+                'username': username,
+                # 'email': email,
+            })
+        
+        try:
+            user = User.objects.get(username=username)
+            user.set_password(new_password)
+            user.save()
+            return redirect('accounts.login')
+        except User.DoesNotExist:
+            return render(request, 'accounts/password_reset.html', {
+                'error': 'Invalid username or email.',
+                'username': username,
+            })
+    
+    return render(request, 'accounts/password_reset.html')
